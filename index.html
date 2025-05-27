@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🧠 Joke of the Day</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: monospace;
+            background: black;
+            color: #0f0;
+        }
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+        .box {
+            position: relative;
+            background: rgba(0, 0, 0, 0.75);
+            border: 2px solid #0f0;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 80%;
+            text-align: center;
+            font-size: 1.3em;
+            box-shadow: 0 0 15px #0f0;
+        }
+        .container {
+            margin-top: 5%;
+        }
+    </style>
+</head>
+<body>
+<canvas id="matrix"></canvas>
+
+<div class="container">
+    <div class="box" id="static-joke">{{joke}}</div>
+    <div class="box" id="api-joke">Loading joke from API...</div>
+    <div class="box" id="public-ip">Fetching public IP...</div>
+</div>
+
+<script>
+    // Matrix background
+    const canvas = document.getElementById('matrix');
+    const ctx = canvas.getContext('2d');
+    canvas.height = window.innerHeight;
+    canvas.width = window.innerWidth;
+    const letters = '01';
+    const fontSize = 16;
+    const columns = canvas.width / fontSize;
+    const drops = Array(Math.floor(columns)).fill(1);
+    function drawMatrix() {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#0f0';
+        ctx.font = fontSize + 'px monospace';
+        for (let i = 0; i < drops.length; i++) {
+            const text = letters[Math.floor(Math.random() * letters.length)];
+            ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+            if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                drops[i] = 0;
+            }
+            drops[i]++;
+        }
+    }
+    setInterval(drawMatrix, 33);
+
+    // Fetch API joke
+    fetch("https://icanhazdadjoke.com/", {
+        headers: { "Accept": "application/json" }
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("api-joke").textContent = data.joke;
+    })
+    .catch(err => {
+        document.getElementById("api-joke").textContent = "Failed to fetch API joke 😢";
+        console.error(err);
+    });
+
+    // Fetch public IP
+    fetch("https://ifconfig.me/ip")
+    .then(res => res.text())
+    .then(ip => {
+        document.getElementById("public-ip").textContent = `Public IP: ${ip.trim()}`;
+    })
+    .catch(err => {
+        document.getElementById("public-ip").textContent = "Failed to fetch public IP ❌";
+        console.error(err);
+    });
+</script>
+</body>
+</html>
